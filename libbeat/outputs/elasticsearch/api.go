@@ -2,6 +2,7 @@ package elasticsearch
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/elastic/beats/libbeat/logp"
 )
@@ -174,4 +175,28 @@ func (es *Connection) apiCall(
 		return 0, nil, err
 	}
 	return es.request(method, path, params, body)
+}
+
+// Create path out of index, docType and id that is used for querying Elasticsearch
+func makePath(index string, docType string, id string) (string, error) {
+
+	var path string
+	if len(docType) > 0 {
+		if len(id) > 0 {
+			path = fmt.Sprintf("/%s/%s/%s", index, docType, id)
+		} else {
+			path = fmt.Sprintf("/%s/%s", index, docType)
+		}
+	} else {
+		if len(id) > 0 {
+			if len(index) > 0 {
+				path = fmt.Sprintf("/%s/%s", index, id)
+			} else {
+				path = fmt.Sprintf("/%s", id)
+			}
+		} else {
+			path = fmt.Sprintf("/%s", index)
+		}
+	}
+	return path, nil
 }

@@ -178,7 +178,7 @@ func makeClientFactory(
 	out *elasticsearchOutput,
 ) func(string) (mode.ProtocolClient, error) {
 	return func(host string) (mode.ProtocolClient, error) {
-		esURL, err := getURL(config.Protocol, config.Path, host)
+		esURL, err := common.GetURL(config.Protocol, 9200, config.Path, host)
 		if err != nil {
 			logp.Err("Invalid host param set: %s, Error: %v", host, err)
 			return nil, err

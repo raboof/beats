@@ -1,6 +1,6 @@
 // +build !integration
 
-package elasticsearch
+package common
 
 import (
 	"fmt"
@@ -30,40 +30,6 @@ func TestUrlEncode(t *testing.T) {
 	if url != "husband=joe&wife=sarah" {
 		t.Errorf("Fail to encode params: %s", url)
 	}
-}
-
-func TestMakePath(t *testing.T) {
-	path, err := makePath("twitter", "tweet", "1")
-	if err != nil {
-		t.Errorf("Fail to create path: %s", err)
-	}
-	if path != "/twitter/tweet/1" {
-		t.Errorf("Wrong path created: %s", path)
-	}
-
-	path, err = makePath("twitter", "", "_refresh")
-	if err != nil {
-		t.Errorf("Fail to create path: %s", err)
-	}
-	if path != "/twitter/_refresh" {
-		t.Errorf("Wrong path created: %s", path)
-	}
-
-	path, err = makePath("", "", "_bulk")
-	if err != nil {
-		t.Errorf("Fail to create path: %s", err)
-	}
-	if path != "/_bulk" {
-		t.Errorf("Wrong path created: %s", path)
-	}
-	path, err = makePath("twitter", "", "")
-	if err != nil {
-		t.Errorf("Fail to create path: %s", err)
-	}
-	if path != "/twitter" {
-		t.Errorf("Wrong path created: %s", path)
-	}
-
 }
 
 func TestGetUrl(t *testing.T) {
@@ -117,7 +83,7 @@ func TestGetUrl(t *testing.T) {
 	}
 
 	for input, output := range inputOutput {
-		urlNew, err := getURL("", "", input)
+		urlNew, err := GetURL("", 9200, "", input)
 		assert.Nil(t, err)
 		assert.Equal(t, output, urlNew, fmt.Sprintf("input: %v", input))
 	}
@@ -128,7 +94,7 @@ func TestGetUrl(t *testing.T) {
 		"http://username:password@es.found.io:9324": "http://username:password@es.found.io:9324/hello",
 	}
 	for input, output := range inputOutputWithDefaults {
-		urlNew, err := getURL("https", "/hello", input)
+		urlNew, err := GetURL("https", 9200, "/hello", input)
 		assert.Nil(t, err)
 		assert.Equal(t, output, urlNew)
 	}

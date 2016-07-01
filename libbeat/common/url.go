@@ -1,15 +1,16 @@
-package elasticsearch
+package common
 
 import (
 	"fmt"
 	"net"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
 // Creates the url based on the url configuration.
 // Adds missing parts with defaults (scheme, host, port)
-func getURL(defaultScheme string, defaultPath string, rawURL string) (string, error) {
+func GetURL(defaultScheme string, defaultPort int, defaultPath string, rawURL string) (string, error) {
 
 	if defaultScheme == "" {
 		defaultScheme = "http"
@@ -22,7 +23,7 @@ func getURL(defaultScheme string, defaultPath string, rawURL string) (string, er
 
 	scheme := addr.Scheme
 	host := addr.Host
-	port := "9200"
+	port := defaultPort
 
 	// sanitize parse errors if url does not contain scheme
 	// if parse url looks funny, prepend schema and try again:
@@ -46,7 +47,9 @@ func getURL(defaultScheme string, defaultPath string, rawURL string) (string, er
 		// split host and optional port
 		if splitHost, splitPort, err := net.SplitHostPort(host); err == nil {
 			host = splitHost
-			port = splitPort
+			if tmpPort, err := strconv.Atoi(splitPort); err == nil {
+				port = tmpPort
+			}
 		}
 
 		// Check if ipv6
@@ -62,11 +65,11 @@ func getURL(defaultScheme string, defaultPath string, rawURL string) (string, er
 
 	// reconstruct url
 	addr.Scheme = scheme
-	addr.Host = host + ":" + port
+	addr.Host = host + ":" + strconv.Itoa(port)
 	return addr.String(), nil
 }
 
-func makeURL(url, path string, params map[string]string) string {
+func MakeURL(url, path string, params map[string]string) string {
 	u := url + path
 	if len(params) > 0 {
 		u = u + "?" + urlEncode(params)
@@ -82,28 +85,4 @@ func urlEncode(params map[string]string) string {
 		values.Add(key, string(val))
 	}
 	return values.Encode()
-}
-
-// Create path out of index, docType and id that is used for querying Elasticsearch
-func makePath(index string, docType string, id string) (string, error) {
-
-	var path string
-	if len(docType) > 0 {
-		if len(id) > 0 {
-			path = fmt.Sprintf("/%s/%s/%s", index, docType, id)
-		} else {
-			path = fmt.Sprintf("/%s/%s", index, docType)
-		}
-	} else {
-		if len(id) > 0 {
-			if len(index) > 0 {
-				path = fmt.Sprintf("/%s/%s", index, id)
-			} else {
-				path = fmt.Sprintf("/%s", id)
-			}
-		} else {
-			path = fmt.Sprintf("/%s", index)
-		}
-	}
-	return path, nil
 }

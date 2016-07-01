@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/elastic/beats/libbeat/common"
 )
 
 type bulkMeta struct {
@@ -80,7 +82,7 @@ func newBulkRequest(
 		return nil, err
 	}
 
-	url := makeURL(urlStr, path, params)
+	url := common.MakeURL(urlStr, path, params)
 
 	var reader io.Reader
 	if body != nil {
