@@ -176,3 +176,37 @@ func TestBulkMoreOperations(t *testing.T) {
 		t.Errorf("Delete() returns error: %s", err)
 	}
 }
+
+func TestMakePath(t *testing.T) {
+	path, err := MakePath("twitter", "tweet", "1")
+	if err != nil {
+		t.Errorf("Fail to create path: %s", err)
+	}
+	if path != "/twitter/tweet/1" {
+		t.Errorf("Wrong path created: %s", path)
+	}
+
+	path, err = MakePath("twitter", "", "_refresh")
+	if err != nil {
+		t.Errorf("Fail to create path: %s", err)
+	}
+	if path != "/twitter/_refresh" {
+		t.Errorf("Wrong path created: %s", path)
+	}
+
+	path, err = makePath("", "", "_bulk")
+	if err != nil {
+		t.Errorf("Fail to create path: %s", err)
+	}
+	if path != "/_bulk" {
+		t.Errorf("Wrong path created: %s", path)
+	}
+	path, err = makePath("twitter", "", "")
+	if err != nil {
+		t.Errorf("Fail to create path: %s", err)
+	}
+	if path != "/twitter" {
+		t.Errorf("Wrong path created: %s", path)
+	}
+
+}
