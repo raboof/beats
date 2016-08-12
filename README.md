@@ -1,3 +1,13 @@
+# StackState branch
+
+This is a 'throwaway' branch of the Beats framework that combines the 
+improvements to the Beats framework currently in used at StackState.
+
+This currently consists of:
+
+* PacketBeat IPv6 support (from the packetbeat-ipv6 branch)
+* HTTP output plugin (from the httpOutput branch)
+
 [![Travis](https://travis-ci.org/elastic/beats.svg?branch=master)](https://travis-ci.org/elastic/beats)
 [![AppVeyor](https://ci.appveyor.com/api/projects/status/p7y92i6pp2v7vnrd/branch/master?svg=true)](https://ci.appveyor.com/project/elastic-beats/beats/branch/master)
 [![GoReportCard](http://goreportcard.com/badge/elastic/beats)](http://goreportcard.com/report/elastic/beats)
