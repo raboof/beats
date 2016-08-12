@@ -211,7 +211,7 @@ func (conn *Connection) request(
 	params map[string]string,
 	body interface{},
 ) (int, []byte, error) {
-	url := common.MakeURL(conn.URL, path, params)
+	url := common.MakeURL(conn.URL, path, "", params)
 	debugf("%s %s %v", method, url, body)
 
 	if body == nil {

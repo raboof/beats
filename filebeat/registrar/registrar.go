@@ -2,6 +2,7 @@ package registrar
 
 import (
 	"encoding/json"
+	"expvar"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -17,12 +18,17 @@ import (
 )
 
 type Registrar struct {
-	Channel      chan []*FileEvent
+	Channel      chan []*Event
 	done         chan struct{}
 	registryFile string       // Path to the Registry File
 	states       *file.States // Map with all file paths inside and the corresponding state
 	wg           sync.WaitGroup
 }
+
+var (
+	statesUpdated = expvar.NewInt("registrar.state_updates")
+	statesTotal   = expvar.NewInt("registar.states.total")
+)
 
 func New(registryFile string) (*Registrar, error) {
 
@@ -30,7 +36,7 @@ func New(registryFile string) (*Registrar, error) {
 		registryFile: registryFile,
 		done:         make(chan struct{}),
 		states:       file.NewStates(),
-		Channel:      make(chan []*FileEvent, 1),
+		Channel:      make(chan []*Event, 1),
 		wg:           sync.WaitGroup{},
 	}
 	err := r.Init()
@@ -180,16 +186,18 @@ func (r *Registrar) Run() {
 			r.processEventStates(events)
 		}
 
+		beforeCount := r.states.Count()
 		r.states.Cleanup()
-		logp.Debug("registrar", "Registrar states cleaned up.")
+		logp.Debug("registrar", "Registrar states cleaned up. Before: %d , After: %d", beforeCount, r.states.Count())
 		if err := r.writeRegistry(); err != nil {
 			logp.Err("Writing of registry returned error: %v. Continuing...", err)
 		}
+
 	}
 }
 
 // processEventStates gets the states from the events and writes them to the registrar state
-func (r *Registrar) processEventStates(events []*FileEvent) {
+func (r *Registrar) processEventStates(events []*Event) {
 	logp.Debug("registrar", "Processing %d events", len(events))
 
 	// Take the last event found for each file source
@@ -199,7 +207,7 @@ func (r *Registrar) processEventStates(events []*FileEvent) {
 		if event.InputType == cfg.StdinInputType {
 			continue
 		}
-		r.states.Update(event.FileState)
+		r.states.Update(event.State)
 	}
 }
 
@@ -234,7 +242,9 @@ func (r *Registrar) writeRegistry() error {
 	// Directly close file because of windows
 	f.Close()
 
-	logp.Info("Registry file updated. %d states written.", len(states))
+	logp.Debug("registrar", "Registry file updated. %d states written.", len(states))
+	statesUpdated.Add(int64(len(states)))
+	statesTotal.Set(int64(len(states)))
 
 	return file.SafeFileRotate(r.registryFile, tempfile)
 }
