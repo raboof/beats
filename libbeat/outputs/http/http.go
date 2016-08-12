@@ -35,7 +35,7 @@ var (
 	ErrJSONEncodeFailed = errors.New("json encode failed")
 )
 
-func New(cfg *common.Config, _ int) (outputs.Outputer, error) {
+func New(beatName string, cfg *common.Config, _ int) (outputs.Outputer, error) {
 	output := &httpOutput{}
 	err := output.init(cfg)
 	if err != nil {

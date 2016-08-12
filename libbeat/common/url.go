@@ -69,20 +69,27 @@ func GetURL(defaultScheme string, defaultPort int, defaultPath string, rawURL st
 	return addr.String(), nil
 }
 
-func MakeURL(url, path string, params map[string]string) string {
-	u := url + path
-	if len(params) > 0 {
-		u = u + "?" + urlEncode(params)
+func MakeURL(url, path, pipeline string, params map[string]string) string {
+	if len(params) == 0 && pipeline == "" {
+		return url + path
 	}
-	return u
+
+	return strings.Join([]string{
+		url, path, "?", urlEncode(pipeline, params),
+	}, "")
 }
 
 // Encode parameters in url
-func urlEncode(params map[string]string) string {
+func urlEncode(pipeline string, params map[string]string) string {
 	values := url.Values{}
 
 	for key, val := range params {
 		values.Add(key, string(val))
 	}
+
+	if pipeline != "" {
+		values.Add("pipeline", pipeline)
+	}
+
 	return values.Encode()
 }
